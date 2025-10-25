@@ -34,7 +34,7 @@ pub fn[A] T::new() -> T[A] {
 ///   assert_eq(queue.length(), 5)
 /// ```
 #as_free_fn
-pub fn[A : Compare] T::from_array(arr : Array[A]) -> T[A] {
+pub fn[A : Compare] T::from_array(arr : ArrayView[A]) -> T[A] {
   guard arr is [a0, ..] else { return new() }
   let len = arr.length()
   for i = 1, acc = { content: a0, sibling: None, child: None } {
@@ -107,6 +107,11 @@ pub fn[A : Compare] T::iter(self : T[A]) -> Iter[A] {
 }
 
 ///|
+pub fn[A : Compare] T::iterator(self : T[A]) -> Iterator[A] {
+  self.to_array().iterator()
+}
+
+///|
 pub impl[A : ToJson + Compare] ToJson for T[A] with to_json(self) {
   let arr = []
   for x in self {
@@ -120,6 +125,16 @@ pub impl[A : ToJson + Compare] ToJson for T[A] with to_json(self) {
 pub fn[K : Compare] T::from_iter(iter : Iter[K]) -> T[K] {
   let s = new()
   iter.each(e => s.push(e))
+  s
+}
+
+///|
+#as_free_fn
+pub fn[K : Compare] T::from_iterator(iter : Iterator[K]) -> T[K] {
+  let s = new()
+  while iter.next() is Some(e) {
+    s.push(e)
+  }
   s
 }
 

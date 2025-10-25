@@ -59,6 +59,19 @@ test "iteri" {
 }
 
 ///|
+test "iterator2" {
+  let ls = @list.of([1, 2, 3, 4, 5])
+  let mut failed = false
+  let it = ls.iterator2()
+  while it.next() is Some((i, x)) {
+    if x != i + 1 {
+      failed = true
+    }
+  }
+  inspect(failed, content="false")
+}
+
+///|
 test "map" {
   let ls = @list.of([1, 2, 3, 4, 5])
   let rs : @list.List[Int] = @list.empty()
@@ -250,12 +263,6 @@ test "nth" {
   let ls = @list.of([1, 2, 3, 4, 5])
   inspect(ls.nth(0), content="Some(1)")
   inspect(ls.nth(1), content="Some(2)")
-}
-
-///|
-test "nth" {
-  let ls = @list.of([1, 2, 3, 4, 5])
-  inspect(ls.nth(0), content="Some(1)")
   inspect(ls.nth(20), content="None")
 }
 
@@ -558,9 +565,18 @@ test "default" {
 }
 
 ///|
-test "iter" {
+test "iter_map_fold" {
   let ls = @list.of([1, 2, 3, 4, 5])
   inspect(ls.iter().map(x => x + 1).fold((a, b) => a + b, init=0), content="20")
+}
+
+///|
+test "iterator" {
+  let ls = @list.of([1, 2, 3, 4, 5])
+  inspect(
+    ls.iterator().map(x => x + 1).fold((a, b) => a + b, init=0),
+    content="20",
+  )
 }
 
 ///|
@@ -715,6 +731,33 @@ test "from_iter single element iter" {
 ///|
 test "from_iter empty iter" {
   let pq : @list.List[Int] = @list.from_iter(Iter::empty())
+  inspect(pq, content="@list.of([])")
+}
+
+///|
+test "from_iterator multiple elements iter" {
+  inspect(
+    @list.from_iterator([1, 2, 3].iterator()),
+    content="@list.of([1, 2, 3])",
+  )
+}
+
+///|
+test "from_iterator_rev multiple elements iter" {
+  inspect(
+    @list.from_iterator_rev([1, 2, 3].iterator()),
+    content="@list.of([3, 2, 1])",
+  )
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(@list.from_iterator([1].iterator()), content="@list.of([1])")
+}
+
+///|
+test "from_iterator empty iter" {
+  let pq : @list.List[Int] = @list.from_iterator(Iterator::empty())
   inspect(pq, content="@list.of([])")
 }
 

@@ -42,11 +42,15 @@ fn[A] List::flatten(Self[Self[A]]) -> Self[A]
 fn[A, B] List::fold(Self[A], init~ : B, (B, A) -> B raise?) -> B raise?
 fn[A, B] List::foldi(Self[A], init~ : B, (Int, B, A) -> B raise?) -> B raise?
 #as_free_fn
-fn[A] List::from_array(Array[A]) -> Self[A]
+fn[A] List::from_array(ArrayView[A]) -> Self[A]
 #as_free_fn
 fn[A] List::from_iter(Iter[A]) -> Self[A]
 #as_free_fn
 fn[A] List::from_iter_rev(Iter[A]) -> Self[A]
+#as_free_fn
+fn[A] List::from_iterator(Iterator[A]) -> Self[A]
+#as_free_fn
+fn[A] List::from_iterator_rev(Iterator[A]) -> Self[A]
 #as_free_fn
 fn[A : @json.FromJson] List::from_json(Json) -> Self[A] raise @json.JsonDecodeError
 fn[A : Hash] List::hash(Self[A]) -> Int // from trait `Hash`
@@ -59,6 +63,8 @@ fn[A : Eq] List::is_prefix(Self[A], Self[A]) -> Bool
 fn[A : Eq] List::is_suffix(Self[A], Self[A]) -> Bool
 fn[A] List::iter(Self[A]) -> Iter[A]
 fn[A] List::iter2(Self[A]) -> Iter2[Int, A]
+fn[A] List::iterator(Self[A]) -> Iterator[A]
+fn[A] List::iterator2(Self[A]) -> Iterator[(Int, A)]
 fn[A] List::last(Self[A]) -> A?
 fn[A] List::length(Self[A]) -> Int
 fn[A : Eq, B] List::lookup(Self[(A, B)], A) -> B?

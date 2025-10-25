@@ -97,8 +97,18 @@ test "insert" {
 }
 
 ///|
-test "from_array" {
+test "of" {
   let m = @hashset.of(["a", "b", "c"])
+  assert_true(m.contains("a"))
+  assert_true(m.contains("b"))
+  assert_true(m.contains("c"))
+  assert_false(m.contains("d"))
+}
+
+///|
+test "from_array" {
+  let arr = ["a", "b", "c"]
+  let m = @hashset.from_array(arr)
   assert_true(m.contains("a"))
   assert_true(m.contains("b"))
   assert_true(m.contains("c"))
@@ -126,6 +136,18 @@ test "is_empty" {
 ///|
 test "iter" {
   let m = @hashset.of(["a", "b", "c"]).iter().collect()
+  m.sort()
+  inspect(
+    m,
+    content=(
+      #|["a", "b", "c"]
+    ),
+  )
+}
+
+///|
+test "iterator" {
+  let m = @hashset.of(["a", "b", "c"]).iterator().collect()
   m.sort()
   inspect(
     m,
@@ -281,28 +303,6 @@ test "sub" {
 }
 
 ///|
-test "iter" {
-  let array = @hashset.of(["a", "b", "c"]).iter().collect()
-  array.sort()
-  inspect(
-    array,
-    content=(
-      #|["a", "b", "c"]
-    ),
-  )
-}
-
-///|
-test "from_array" {
-  let arr = ["a", "b", "c"]
-  let m = @hashset.from_array(arr)
-  assert_true(m.contains("a"))
-  assert_true(m.contains("b"))
-  assert_true(m.contains("c"))
-  assert_false(m.contains("d"))
-}
-
-///|
 test "insert_and_grow" {
   let m = @hashset.new()
   for i in 0..<10 {
@@ -362,6 +362,24 @@ test "from_iter single element iter" {
 ///|
 test "from_iter empty iter" {
   let map : @hashset.HashSet[Int] = @hashset.from_iter(Iter::empty())
+  inspect(map, content="@hashset.of([])")
+}
+
+///|
+test "from_iterator multiple elements iter" {
+  let array = @hashset.from_iterator([1, 2, 3].iterator()).to_array()
+  array.sort()
+  inspect(array, content="[1, 2, 3]")
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(@hashset.from_iterator([1].iterator()), content="@hashset.of([1])")
+}
+
+///|
+test "from_iterator empty iter" {
+  let map : @hashset.HashSet[Int] = @hashset.from_iterator(Iterator::empty())
   inspect(map, content="@hashset.of([])")
 }
 

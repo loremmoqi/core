@@ -35,6 +35,15 @@ test "get" {
 }
 
 ///|
+test "_[_]" {
+  let m = @hashmap.new()
+  m.set("a", 1)
+  m.set("b", 2)
+  assert_eq(m["a"], 1)
+  assert_eq(m["b"], 2)
+}
+
+///|
 test "get_or_default" {
   let m = @hashmap.new()
   m.set("a", 1)
@@ -73,15 +82,6 @@ test "_[_]=_" {
   m["b"] = 2
   assert_eq(m.get("a"), Some(1))
   assert_eq(m.get("b"), Some(2))
-}
-
-///|
-test "get" {
-  let m = @hashmap.new()
-  m.set("a", 1)
-  m.set("b", 2)
-  assert_eq(m["a"], 1)
-  assert_eq(m["b"], 2)
 }
 
 ///|
@@ -137,11 +137,24 @@ test "is_empty" {
 }
 
 ///|
-test "iter" {
+test "each" {
   let m = @hashmap.of([("a", 1), ("b", 2), ("c", 3)])
   let mut sum = 0
   m.each((_k, v) => sum += v)
   inspect(sum, content="6")
+}
+
+///|
+test "iter_collect" {
+  let map = @hashmap.of([(1, "one"), (2, "two"), (3, "three")])
+  let array = map.iter().collect()
+  array.sort()
+  inspect(
+    array,
+    content=(
+      #|[(1, "one"), (2, "two"), (3, "three")]
+    ),
+  )
 }
 
 ///|
@@ -158,9 +171,9 @@ test "iteri" {
 }
 
 ///|
-test "iter" {
+test "iter2" {
   let map = @hashmap.of([(1, "one"), (2, "two"), (3, "three")])
-  let array = map.iter().collect()
+  let array = map.iter2().to_array()
   array.sort()
   inspect(
     array,
@@ -171,9 +184,9 @@ test "iter" {
 }
 
 ///|
-test "iter2" {
+test "iterator" {
   let map = @hashmap.of([(1, "one"), (2, "two"), (3, "three")])
-  let array = map.iter2().to_array()
+  let array = map.iterator().collect()
   array.sort()
   inspect(
     array,
@@ -287,6 +300,31 @@ test "from_iter single element iter" {
 ///|
 test "from_iter empty iter" {
   let map : @hashmap.HashMap[Int, Int] = @hashmap.from_iter(Iter::empty())
+  inspect(map, content="HashMap::of([])")
+}
+
+///|
+test "from_iterator multiple elements iter" {
+  let map = @hashmap.from_iterator([(1, 1), (2, 2), (3, 3)].iterator())
+  guard map is { 1: 1, 2: 2, 3: 3, .. } else {
+    fail("Map is not expected: \{map}")
+  }
+  inspect(map.length(), content="3")
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(
+    @hashmap.from_iterator([(1, 1)].iterator()),
+    content="HashMap::of([(1, 1)])",
+  )
+}
+
+///|
+test "from_iterator empty iter" {
+  let map : @hashmap.HashMap[Int, Int] = @hashmap.from_iterator(
+    Iterator::empty(),
+  )
   inspect(map, content="HashMap::of([])")
 }
 

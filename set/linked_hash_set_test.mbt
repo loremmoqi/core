@@ -52,8 +52,18 @@ test "add remove" {
 }
 
 ///|
-test "from_array" {
+test "of" {
   let m = @set.Set::of(["a", "b", "c"])
+  assert_true(m.contains("a"))
+  assert_true(m.contains("b"))
+  assert_true(m.contains("c"))
+  assert_false(m.contains("d"))
+}
+
+///|
+test "from_array" {
+  let arr = ["a", "b", "c"]
+  let m = @set.Set::from_array(arr)
   assert_true(m.contains("a"))
   assert_true(m.contains("b"))
   assert_true(m.contains("c"))
@@ -79,11 +89,22 @@ test "is_empty" {
 }
 
 ///|
-test "iter" {
+test "each" {
   let m = @set.Set::of(["a", "b", "c"])
   let mut sum = ""
   m.each(k => sum += k)
   inspect(sum, content="abc")
+}
+
+///|
+test "iter" {
+  let buf = StringBuilder::new(size_hint=20)
+  let map = @set.Set::of(["a", "b", "c"])
+  map.iter().each(e => buf.write_string("[\{e}]"))
+  inspect(buf, content="[a][b][c]")
+  buf.reset()
+  map.iter().take(2).each(e => buf.write_string("[\{e}]"))
+  inspect(buf, content="[a][b]")
 }
 
 ///|
@@ -148,24 +169,14 @@ test "symmetric_difference" {
 }
 
 ///|
-test "iter" {
+test "iterator" {
   let buf = StringBuilder::new(size_hint=20)
   let map = @set.Set::of(["a", "b", "c"])
-  map.iter().each(e => buf.write_string("[\{e}]"))
+  map.iterator().each(e => buf.write_string("[\{e}]"))
   inspect(buf, content="[a][b][c]")
   buf.reset()
-  map.iter().take(2).each(e => buf.write_string("[\{e}]"))
+  map.iterator().take(2).each(e => buf.write_string("[\{e}]"))
   inspect(buf, content="[a][b]")
-}
-
-///|
-test "from_array" {
-  let arr = ["a", "b", "c"]
-  let m = @set.Set::from_array(arr)
-  assert_true(m.contains("a"))
-  assert_true(m.contains("b"))
-  assert_true(m.contains("c"))
-  assert_false(m.contains("d"))
 }
 
 ///|
@@ -224,16 +235,6 @@ test "clear_and_reinsert" {
 }
 
 ///|
-test "insert_and_grow" {
-  let m = @set.Set::new()
-  for i in 0..<10 {
-    m.add(i.to_string())
-  }
-  assert_eq(m.length(), 10)
-  assert_eq(m.capacity(), 16)
-}
-
-///|
 test "from_iter multiple elements iter" {
   inspect(@set.Set::from_iter([1, 2, 3].iter()), content="{1, 2, 3}")
 }
@@ -246,6 +247,22 @@ test "from_iter single element iter" {
 ///|
 test "from_iter empty iter" {
   let map : @set.Set[Int] = @set.Set::from_iter(Iter::empty())
+  inspect(map, content="{}")
+}
+
+///|
+test "from_iterator multiple elements iter" {
+  inspect(@set.Set::from_iterator([1, 2, 3].iterator()), content="{1, 2, 3}")
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(@set.Set::from_iterator([1].iterator()), content="{1}")
+}
+
+///|
+test "from_iterator empty iter" {
+  let map : @set.Set[Int] = @set.Set::from_iterator(Iterator::empty())
   inspect(map, content="{}")
 }
 

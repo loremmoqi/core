@@ -71,3 +71,10 @@ test "iter with early termination on left subtree" {
   // Verify that we stopped after processing the first element
   inspect(count, content="1")
 }
+
+///|
+test "iterator" {
+  let set = @sorted_set.of([2, 1, 3])
+  let result = set.iterator().collect()
+  inspect(result, content="[1, 2, 3]")
+}

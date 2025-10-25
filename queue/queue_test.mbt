@@ -69,6 +69,10 @@ test "to_string" {
   inspect(queue, content="@queue.of([1, 2, 3, 4, 11])")
   queue.unsafe_pop() |> ignore
   inspect(queue, content="@queue.of([2, 3, 4, 11])")
+  let queue : @queue.Queue[Int] = @queue.from_array([])
+  inspect(queue, content="@queue.of([])")
+  let queue : @queue.Queue[Int] = @queue.from_array([9, 8, 7, 5])
+  inspect(queue, content="@queue.of([9, 8, 7, 5])")
 }
 
 ///|
@@ -129,7 +133,7 @@ test "pop" {
 }
 
 ///|
-test "iter" {
+test "each" {
   let queue : @queue.Queue[Int] = @queue.new()
   let mut sum = 0
   queue.each(x => sum = sum + x)
@@ -138,6 +142,12 @@ test "iter" {
   sum = 0
   queue.each(x => sum = sum + x)
   assert_eq(sum, 10)
+}
+
+///|
+test "iter_fold" {
+  let q = @queue.of([1, 2, 3, 4, 5])
+  inspect(q.iter().fold((x, y) => x + y, init=0), content="15")
 }
 
 ///|
@@ -176,9 +186,9 @@ test "length" {
 }
 
 ///|
-test "iter" {
+test "iterator" {
   let q = @queue.of([1, 2, 3, 4, 5])
-  inspect(q.iter().fold((x, y) => x + y, init=0), content="15")
+  inspect(q.iterator().fold((x, y) => x + y, init=0), content="15")
 }
 
 ///|
@@ -198,11 +208,22 @@ test "from_iter empty iter" {
 }
 
 ///|
-test "to_string" {
-  let queue : @queue.Queue[Int] = @queue.from_array([])
-  assert_eq(queue.to_string(), "@queue.of([])")
-  let queue : @queue.Queue[Int] = @queue.from_array([9, 8, 7, 5])
-  assert_eq(queue.to_string(), "@queue.of([9, 8, 7, 5])")
+test "from_iterator multiple elements iter" {
+  inspect(
+    @queue.from_iterator([1, 2, 3].iterator()),
+    content="@queue.of([1, 2, 3])",
+  )
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(@queue.from_iterator([1].iterator()), content="@queue.of([1])")
+}
+
+///|
+test "from_iterator empty iter" {
+  let pq : @queue.Queue[Int] = @queue.from_iterator(Iterator::empty())
+  inspect(pq, content="@queue.of([])")
 }
 
 ///|

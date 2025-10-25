@@ -34,7 +34,7 @@ pub fn[K] HashSet::new(capacity? : Int = default_init_capacity) -> HashSet[K] {
 ///|
 /// Create new hash set from array.
 #as_free_fn
-pub fn[K : Hash + Eq] HashSet::from_array(arr : Array[K]) -> HashSet[K] {
+pub fn[K : Hash + Eq] HashSet::from_array(arr : ArrayView[K]) -> HashSet[K] {
   let m = new()
   arr.each(e => m.add(e))
   m
@@ -300,6 +300,24 @@ pub fn[K] HashSet::iter(self : HashSet[K]) -> Iter[K] {
 }
 
 ///|
+/// Returns the iterator of the hash set.
+pub fn[K] HashSet::iterator(self : HashSet[K]) -> Iterator[K] {
+  let mut i = 0
+  let len = self.entries.length()
+  Iterator::new(fn() {
+    while i < len {
+      let entry = self.entries.unsafe_get(i)
+      i += 1
+      if entry is Some({ key, .. }) {
+        return Some(key)
+      }
+    } else {
+      None
+    }
+  })
+}
+
+///|
 /// Converts the hash set to an array.
 pub fn[K] HashSet::to_array(self : HashSet[K]) -> Array[K] {
   let arr = Array::new(capacity=self.size)
@@ -316,6 +334,16 @@ pub fn[K] HashSet::to_array(self : HashSet[K]) -> Array[K] {
 pub fn[K : Hash + Eq] HashSet::from_iter(iter : Iter[K]) -> HashSet[K] {
   let s = new()
   iter.each(e => s.add(e))
+  s
+}
+
+///|
+#as_free_fn
+pub fn[K : Hash + Eq] HashSet::from_iterator(iter : Iterator[K]) -> HashSet[K] {
+  let s = new()
+  while iter.next() is Some(e) {
+    s.add(e)
+  }
   s
 }
 

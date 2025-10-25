@@ -44,6 +44,14 @@ test "@hashset.size" {
   } else {
     assert_eq(set.add(0).length(), 20)
   }
+  let set = @hashset.new()
+  inspect(set.length(), content="0")
+  let set = set.add(1)
+  inspect(set.length(), content="1")
+  let set = set.add(2)
+  inspect(set.length(), content="2")
+  let set = set.remove(1)
+  inspect(set.length(), content="1")
 }
 
 ///|
@@ -79,6 +87,19 @@ test "@hashset.iter" {
 }
 
 ///|
+test "@hashset.iterator" {
+  let data = @hashset.of(["a", "b", "d", "e", "f"])
+  let array = data.iterator().collect()
+  array.sort()
+  inspect(
+    array,
+    content=(
+      #|["a", "b", "d", "e", "f"]
+    ),
+  )
+}
+
+///|
 test "@hashset.to_string" {
   let set = @hashset.new().add(1).add(3).add(0x0f_ff_ff_ff).add(42)
   let content = set.iter().collect()
@@ -100,46 +121,8 @@ test "@hashset.is_empty" {
   inspect(set.is_empty(), content="true")
   let set = set.add(1)
   inspect(set.is_empty(), content="false")
-}
-
-///|
-test "@hashset.size" {
-  let set = @hashset.new()
-  inspect(set.length(), content="0")
-  let set = set.add(1)
-  inspect(set.length(), content="1")
-  let set = set.add(2)
-  inspect(set.length(), content="2")
-  let set = set.remove(1)
-  inspect(set.length(), content="1")
-}
-
-///|
-test "@hashset.is_empty" {
-  let set = @hashset.new()
-  inspect(set.is_empty(), content="true")
-  let set = set.add(1)
-  inspect(set.is_empty(), content="false")
   let set = set.remove(1)
   inspect(set.is_empty(), content="true")
-}
-
-///|
-test "@hashset.iter" {
-  let set = @hashset.new().add(1).add(2).add(3)
-  let result = []
-  set.each(x => result.push(x))
-  result.sort()
-  assert_eq(result, [1, 2, 3])
-}
-
-///|
-test "@hashset.iter" {
-  let set = @hashset.new().add(1).add(2).add(3)
-  let result = []
-  set.iter().each(x => result.push(x))
-  result.sort()
-  assert_eq(result, [1, 2, 3])
 }
 
 ///|
@@ -157,6 +140,27 @@ test "from_iter single element iter" {
 ///|
 test "from_iter empty iter" {
   let pq : @hashset.HashSet[Int] = @hashset.from_iter(Iter::empty())
+  inspect(pq, content="@immut/hashset.of([])")
+}
+
+///|
+test "from_iterator multiple elements iter" {
+  let data = [1, 2, 3]
+  let set = @hashset.from_iterator(data.iterator())
+  verify_content(set, data)
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(
+    @hashset.from_iterator([1].iterator()),
+    content="@immut/hashset.of([1])",
+  )
+}
+
+///|
+test "from_iterator empty iter" {
+  let pq : @hashset.HashSet[Int] = @hashset.from_iterator(Iterator::empty())
   inspect(pq, content="@immut/hashset.of([])")
 }
 

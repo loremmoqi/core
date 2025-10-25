@@ -73,7 +73,7 @@ test "contains" {
 }
 
 ///|
-test "get" {
+test "at" {
   let map = @sorted_map.from_array([(3, "c"), (2, "b"), (1, "a")])
   inspect(map[1], content="a")
   inspect(map[2], content="b")
@@ -81,7 +81,7 @@ test "get" {
 }
 
 ///|
-test "panic get" {
+test "panic at" {
   let map = @sorted_map.from_array([(3, "c"), (2, "b"), (1, "a")])
   map[4] |> ignore
 }
@@ -155,7 +155,7 @@ test "to_array" {
 }
 
 ///|
-test "iter" {
+test "iter_collect" {
   let map = @sorted_map.from_array([(3, "c"), (2, "b"), (1, "a")])
   inspect(
     map.iter().collect(),
@@ -165,6 +165,23 @@ test "iter" {
   )
   inspect(
     map.iter().take(2).collect(),
+    content=(
+      #|[(1, "a"), (2, "b")]
+    ),
+  )
+}
+
+///|
+test "iterator" {
+  let map = @sorted_map.from_array([(3, "c"), (2, "b"), (1, "a")])
+  inspect(
+    map.iterator().collect(),
+    content=(
+      #|[(1, "a"), (2, "b"), (3, "c")]
+    ),
+  )
+  inspect(
+    map.iterator().take(2).collect(),
     content=(
       #|[(1, "a"), (2, "b")]
     ),
@@ -196,6 +213,30 @@ test "from_iter empty iter" {
 }
 
 ///|
+test "from_iterator multiple elements iter" {
+  inspect(
+    @sorted_map.from_iterator([(1, 1), (2, 2), (3, 3)].iterator()),
+    content="@sorted_map.of([(1, 1), (2, 2), (3, 3)])",
+  )
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(
+    @sorted_map.from_iterator([(1, 1)].iterator()),
+    content="@sorted_map.of([(1, 1)])",
+  )
+}
+
+///|
+test "from_iterator empty iter" {
+  let pq : @sorted_map.SortedMap[Int, Int] = @sorted_map.from_iterator(
+    Iterator::empty(),
+  )
+  inspect(pq, content="@sorted_map.of([])")
+}
+
+///|
 test "arbitrary" {
   let map : Array[@sorted_map.SortedMap[Int, UInt]] = @quickcheck.samples(20)
   inspect(
@@ -214,16 +255,6 @@ test "iter2" {
   let buf = StringBuilder::new()
   for k, v in map {
     buf.write_string("[\{k}\{v}]")
-  }
-  inspect(buf, content="[1a][2b][3c]")
-}
-
-///|
-test "iter" {
-  let map = @sorted_map.from_array([(3, "c"), (2, "b"), (1, "a")])
-  let buf = StringBuilder::new()
-  for kv in map {
-    buf.write_string("[\{kv.0}\{kv.1}]")
   }
   inspect(buf, content="[1a][2b][3c]")
 }

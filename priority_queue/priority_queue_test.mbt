@@ -65,6 +65,23 @@ test "iter" {
 }
 
 ///|
+test "iterator" {
+  let buf = StringBuilder::new(size_hint=20)
+  let v = @priority_queue.of([1, 2, 3])
+  let it = v.iterator()
+  while it.next() is Some(e) {
+    buf.write_string("[\{e}]")
+  }
+  inspect(buf, content="[3][2][1]")
+  buf.reset()
+  let it = v.iterator().take(2)
+  while it.next() is Some(e) {
+    buf.write_string("[\{e}]")
+  }
+  inspect(buf, content="[3][2]")
+}
+
+///|
 test "length" {
   let pq = @priority_queue.new()
   assert_eq(pq.length(), 0)
@@ -99,6 +116,12 @@ test "pop" {
   let pq_ = @priority_queue.of([1])
   pq_.pop() |> ignore
   inspect(pq_.length(), content="0")
+  let p = @priority_queue.from_iter([0, 1, 4, 5, 6, 2, 3].iter())
+  p.pop() |> ignore
+  p.pop() |> ignore
+  p.pop() |> ignore
+  inspect(p.iter(), content="[3, 2, 1, 0]")
+  inspect(p.length(), content="4")
 }
 
 ///|
@@ -156,13 +179,27 @@ test "from_iter empty iter" {
 }
 
 ///|
-test "pop" {
-  let p = @priority_queue.from_iter([0, 1, 4, 5, 6, 2, 3].iter())
-  p.pop() |> ignore
-  p.pop() |> ignore
-  p.pop() |> ignore
-  inspect(p.iter(), content="[3, 2, 1, 0]")
-  inspect(p.length(), content="4")
+test "from_iterator multiple elements iter" {
+  inspect(
+    @priority_queue.from_iterator([1, 2, 3].iterator()),
+    content="@priority_queue.of([3, 2, 1])",
+  )
+}
+
+///|
+test "from_iterator single element iter" {
+  inspect(
+    @priority_queue.from_iterator([1].iterator()),
+    content="@priority_queue.of([1])",
+  )
+}
+
+///|
+test "from_iterator empty iter" {
+  let pq : @priority_queue.T[Int] = @priority_queue.from_iterator(
+    Iterator::empty(),
+  )
+  inspect(pq, content="@priority_queue.of([])")
 }
 
 ///|

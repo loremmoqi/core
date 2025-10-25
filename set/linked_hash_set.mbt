@@ -69,14 +69,21 @@ pub fn[K] Set::new(capacity? : Int = 8) -> Set[K] {
 ///|
 /// Create a hash set from array.
 #as_free_fn
-pub fn[K : Hash + Eq] Set::from_array(arr : Array[K]) -> Set[K] {
+pub fn[K : Hash + Eq] Set::from_array(arr : ArrayView[K]) -> Set[K] {
   let length = arr.length()
   let mut capacity = length.next_power_of_two()
   if length > calc_grow_threshold(capacity) {
     capacity *= 2
   }
   let m = Set::new(capacity~)
-  arr.each(e => m.add(e))
+  // arr.each(e => m.add(e))
+  // FIXME:(upstream)
+  // ArrayView::each depends on array package
+  // adding array package caused `unused package` array
+  // the root cause is that unused warning is not precise
+  for e in arr {
+    m.add(e)
+  }
   m
 }
 
@@ -436,6 +443,21 @@ pub fn[K] Set::iter(self : Set[K]) -> Iter[K] {
 }
 
 ///|
+/// Returns the iterator of the hash set, provide elements in the order of insertion.
+pub fn[K] Set::iterator(self : Set[K]) -> Iterator[K] {
+  let mut curr_entry = self.head
+  Iterator::new(fn() {
+    match curr_entry {
+      Some({ key, next, .. }) => {
+        curr_entry = next
+        Some(key)
+      }
+      None => None
+    }
+  })
+}
+
+///|
 /// Converts the hash set to an array.
 pub fn[K] Set::to_array(self : Set[K]) -> Array[K] {
   let arr = Array::new(capacity=self.size)
@@ -480,6 +502,16 @@ pub fn[K : Hash + Eq] Set::of(arr : FixedArray[K]) -> Set[K] {
 pub fn[K : Hash + Eq] Set::from_iter(iter : Iter[K]) -> Set[K] {
   let m = Set::new()
   for e in iter {
+    m.add(e)
+  }
+  m
+}
+
+///|
+#as_free_fn
+pub fn[K : Hash + Eq] Set::from_iterator(iter : Iterator[K]) -> Set[K] {
+  let m = Set::new()
+  while iter.next() is Some(e) {
     m.add(e)
   }
   m
